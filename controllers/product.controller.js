@@ -5,28 +5,28 @@ const ExcelJS = require("exceljs");
 const fs = require("fs");
 const { Op } = require("sequelize");
 
-exports.create = async (req, res) => {
-  const { name, price, categoryId } = req.body;
-  const image = req.file ? req.file.filename : null;
+// exports.create = async (req, res) => {
+//   const { name, price, categoryId } = req.body;
+//   const image = req.file ? req.file.filename : null;
 
-  const result = await ProductService.createProduct({ name, price, categoryId, image });
-  if (result.error) return res.status(400).json({ error: result.error });
+//   const result = await ProductService.createProduct({ name, price, categoryId, image });
+//   if (result.error) return res.status(400).json({ error: result.error });
 
-  res.json(result);
-};
+//   res.json(result);
+// };
 
 exports.getAll = async (req, res) => {
   const products = await ProductService.getAllProducts();
   res.json(products);
 };
 
-exports.update = async (req, res) => {
-  const { id } = req.params;
-  const result = await ProductService.updateProduct(id, req.body);
-  if (result.error) return res.status(404).json({ error: result.error });
+// exports.update = async (req, res) => {
+//   const { id } = req.params;
+//   const result = await ProductService.updateProduct(id, req.body);
+//   if (result.error) return res.status(404).json({ error: result.error });
 
-  res.json(result);
-};
+//   res.json(result);
+// };
 
 exports.delete = async (req, res) => {
   const { id } = req.params;
@@ -244,5 +244,46 @@ exports.dashboardSummary = async (req, res, next) => {
 
   } catch (error) {
     next(error);
+  }
+};
+
+
+exports.create = async (req, res, next) => {
+  try {
+    const { name, price, categoryId } = req.body;
+    let image = null;
+
+    if (req.file) {
+      image = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+    }
+
+    const product = await Product.create({
+      name,
+      price,
+      CategoryId: categoryId,
+      image
+    });
+
+    res.status(201).json(product);
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.update = async (req, res, next) => {
+  try {
+    const { name, price, categoryId } = req.body;
+    const product = await Product.findByPk(req.params.id);
+    if (!product) return res.status(404).json({ error: 'Not found' });
+
+    let fields = { name, price, CategoryId: categoryId };
+    if (req.file) {
+      fields.image = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+    }
+
+    await product.update(fields);
+    res.json(product);
+  } catch (err) {
+    next(err);
   }
 };

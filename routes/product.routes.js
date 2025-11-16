@@ -15,9 +15,12 @@ router.post("/", upload.single("image"), (req, res, next) => {
 }, ProductController.create);
 
 router.get("/", ProductController.getAll);
-router.put("/:id", ProductController.update);
-router.delete("/:id", ProductController.delete);
+
 router.get("/list", validateQuery(productListQuerySchema), ProductController.list);
+router.post('/', upload.single('image'), ProductController.create);
+// router.put("/:id", ProductController.update);
+router.put('/:id', upload.single('image'), ProductController.update);
+router.delete("/:id", ProductController.delete);
 
 router.post("/bulk-upload", upload.single("file"), ProductController.bulkUpload);
 

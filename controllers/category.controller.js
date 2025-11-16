@@ -13,6 +13,29 @@ exports.getAll = async (req, res) => {
   res.json(result);
 };
 
+exports.list = async (req, res, next) => {
+  try {
+    const { page, limit, sort, search } = req.query;
+
+    const result = await CategoryService.getCategories({
+      page: parseInt(page) || 1,
+      limit: parseInt(limit) || 10,
+      sort: sort || "asc",
+      search: search || ""
+    });
+
+    res.json({
+      total: result.count,
+      page: Number(page) || 1,
+      limit: Number(limit) || 10,
+      categories: result.rows
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+
 exports.update = async (req, res) => {
   const { name } = req.body;
   const { id } = req.params;

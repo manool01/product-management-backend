@@ -11,6 +11,24 @@ class CategoryService {
         return categories;
     }
 
+    static async getCategories({ page = 1, limit = 10, sort = "asc", search = "" }) {
+        const offset = (page - 1) * limit;
+
+        const whereCondition = search
+            ? { name: { [Op.iLike]: `%${search}%` } }
+            : {};
+
+        const { count, rows } = await Category.findAndCountAll({
+            where: whereCondition,
+            order: [["name", sort.toUpperCase()]],
+            limit,
+            offset
+        });
+
+        return { count, rows };
+    }
+
+
     static async updateCategory(id, name) {
         const category = await Category.findByPk(id);
         if (!category) return { error: "Category not found" };
